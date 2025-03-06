@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 const FilterModal = ({ show, onClose, setQuery, filterApply }: { show: boolean; filterApply: () => void; onClose: () => void; setQuery: any }) => {
     const [minAge, setMinAge] = useState(0);
     const [maxAge, setMaxAge] = useState(15);
-    const [location, setLocation] = useState(200);
     const modalRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -51,24 +50,6 @@ const FilterModal = ({ show, onClose, setQuery, filterApply }: { show: boolean; 
                         }}
                         className="w-full"
                     />
-                </div>
-            </div>
-            <div className="flex flex-col space-y-2 mt-6">
-                <h5 className="font-bold">Location</h5>
-                <div className="flex space-x-2">
-                    <input
-                        type="range"
-                        min="0"
-                        max="1000"
-                        value={location}
-                        onChange={(e) => {
-                            const value = Number(e.target.value);
-                            setLocation(value);
-                            setQuery((old: any) => ({ ...old, location: value }));
-                        }}
-                        className="w-full"
-                    />
-                    <span>{location}Km</span>
                 </div>
             </div>
             <button onClick={filterApply} className="bg-blue-400 rounded-xl text-white py-2 mt-6">Apply</button>

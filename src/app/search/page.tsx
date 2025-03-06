@@ -10,6 +10,7 @@ import { MdOutlineExitToApp } from "react-icons/md";
 import SearchBar from "@/components/SearchBar";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 const perPage = 16;
 
@@ -30,7 +31,7 @@ export default function Search() {
         breeds: [],
         ageMin: 0,
         ageMax: 15,
-        location: 0,
+        zipCodes: [],
         from: 1,
         sort: "breed:asc"
     });
@@ -62,8 +63,8 @@ export default function Search() {
         handleQuery(updateQuery);
     };
 
-
     const fevMatch = async () => {
+        const toastId = toast.loading("Matching...");
         try {
             const response = await matchDogs(fevDogs?.map((dog: Dog) => dog.id));
             const dogsDataResponse = await postDogs([response.match]);
@@ -72,9 +73,10 @@ export default function Search() {
                 setShowFevDogs(false);
                 localStorage.removeItem('fevDogs');
                 setFevDogs([]);
+                toast.success("Match successful!", { id: toastId });
             }
         } catch (error) {
-            console.error("Error during match:", error);
+            toast.error("Match failed!", { id: toastId });
         }
     }
 
@@ -85,8 +87,10 @@ export default function Search() {
 
         if (dogIndex === -1) {
             jsonDogs.push(dog);
+            toast.success(`${dog.name} added to your favorite`);
         } else {
             jsonDogs.splice(dogIndex, 1);
+            toast.success(`${dog.name} removed from your favorite`);
         }
         localStorage.setItem('fevDogs', JSON.stringify(jsonDogs));
         setFevDogs(jsonDogs)
@@ -97,18 +101,19 @@ export default function Search() {
         setCurrentPage(1);
     }
 
-    const searchApply = (query:any) => {
+    const searchApply = (query: any) => {
         handleQuery({ ...query, from: 1 });
         setCurrentPage(1);
     }
 
-    const handleQuery = async (query: any) => {        
+    const handleQuery = async (query: any) => {
         setLoading(true);
         try {
             const breedsQuery = query.breeds.map((breed: string) => `breeds=${encodeURIComponent(breed)}`).join('&');
-            const response = await searchDogs(`${breedsQuery}&size=${perPage}&from=${(currentPage - 1) * perPage}&sort=${query.sort}&ageMin=${query.ageMin}&ageMax=${query.ageMax}`);
+            const zipCodesQuery = query.zipCodes.map((zipCode: string) => `zipCodes=${encodeURIComponent(zipCode)}`).join('&');
+            const response = await searchDogs(`${zipCodesQuery}&${breedsQuery}&size=${perPage}&from=${(currentPage - 1) * perPage}&sort=${query.sort}&ageMin=${query.ageMin}&ageMax=${query.ageMax}`);
             if (response.ok) {
-                const data = await response.json();                
+                const data = await response.json();
                 const dogsDataResponse = await postDogs(data.resultIds);
                 setResults(dogsDataResponse);
                 setTotalFoundData(data.total);
@@ -127,15 +132,17 @@ export default function Search() {
     };
 
     const logoutAuth = async () => {
+        const toastId = toast.loading("Logging out...");
         try {
             const response = await logout();
             if (response.ok) {
+                toast.success("Logged out successfully!", { id: toastId });
                 router.replace('/');
             } else {
                 console.log("failed");
             }
         } catch (error) {
-            console.log("Error during logout:", error);
+            toast.error("Logout failed!", { id: toastId });
         }
     }
 

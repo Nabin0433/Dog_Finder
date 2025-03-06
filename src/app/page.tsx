@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { LoginInput } from "../../types";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>();
@@ -22,7 +23,6 @@ export default function Login() {
           setPageLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching breed names:", error);
         setPageLoading(false);
       }
     };
@@ -31,15 +31,17 @@ export default function Login() {
   }, []);
 
   const onSubmit = async (data: LoginInput) => {
+    const toastId = toast.loading("Logging in...");
     try {
       const response = await login(data)
       if (response.ok) {
         router.push("/search");
+        toast.success("Login successful!", { id: toastId });
       } else {
-        console.error("Login failed");
+        toast.error("Login failed!", { id: toastId });
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      toast.error("Login failed!", { id: toastId });
     }
   };
 
@@ -73,7 +75,7 @@ export default function Login() {
           />
           {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
         </div>
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded cursor-pointer">Login</button>
       </form>
     </div>
   );
